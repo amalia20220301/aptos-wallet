@@ -68,7 +68,6 @@ export const importWallet = async (code) => {
                 derivationPath = `m/44'/${COIN_TYPE}'/${i}'/0/${j}`;
                 break;
             }
-            /* eslint-enable no-await-in-loop */
         }
         if (!flag) {
             break;
@@ -105,31 +104,32 @@ const createNewAccount = async (code) => {
                 publicKey: acc.pubKey().toString(),
             };
         }
-        /* eslint-enable no-await-in-loop */
     }
 }
 
-const getAccountFromMetaData = (code,address,derivationPath)=> {
+export const getAccountFromMetaData = (code,metaData)=> {
     const seed = bip39.mnemonicToSeedSync(code.toString());
     const node = HDKey.fromMasterSeed(Buffer.from(seed));
-    const exKey = node.derive(derivationPath);
-    return new AptosAccount(exKey.privateKey, address);
+    const exKey = node.derive(metaData.derivationPath);
+    return new AptosAccount(exKey.privateKey, metaData.address);
 }
 
-const rotateAuthKey = async (code, address, derivationPath) =>{
-    const account = getAccountFromMetaData(code,address,derivationPath);
-    const pathSplit = derivationPath.split("/");
+export const rotateAuthKey = async (code, metaData) =>{
+    //根据metaData获取当前的Account
+    const account = getAccountFromMetaData(code ,metaData);
+    const pathSplit = metaData.derivationPath.split("/");
     const addressIndex = Number(pathSplit[pathSplit.length - 1]);
-    if (addressIndex >= ADDRESS_GAP - 1) {
-        throw new Error("Maximum key rotation reached");
-    }
     const newDerivationPath = `${pathSplit
         .slice(0, pathSplit.length - 1)
         .join("/")}/${addressIndex + 1}`;
-    const newAccount = getAccountFromMetaData(code,address,newDerivationPath);
 
-    const newAuthKey = newAccount.authKey().toString().split("0x")[1];
-    console.log('---newAuthKey------------', newAuthKey);
+    if (addressIndex >= ADDRESS_GAP - 1) {
+        throw new Error("Maximum key rotation reached");
+    }
+    //生成下一个account，address不变，但是signingKey改变了。authentication key 也随之改变了。
+    const newAccount = getAccountFromMetaData(code,metaData);
+    return newAccount.authKey().toString().split("0x")[1];
+
     // const transactionStatus = await this.signGenericTransaction(
     //     account,
     //     "0x1::account::rotate_authentication_key",
@@ -138,5 +138,4 @@ const rotateAuthKey = async (code, address, derivationPath) =>{
     // );
 }
 
-
-rotateAuthKey(process.env.WORDS,"0xaa7420c68c16645775ecf69a5e2fdaa4f89d3293aee0dd280e2d97ad7b879650","m/44'/637'/0'/0/0").then(console.log);
+// rotateAuthKey(process.env.WORDS,"0xaa7420c68c16645775ecf69a5e2fdaa4f89d3293aee0dd280e2d97ad7b879650","m/44'/637'/0'/0/0").then(console.log);
