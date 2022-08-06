@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import {AptosClient, TxnBuilderTypes, BCS} from "aptos";
-import {getAccountFromMetaData, NODE_URL, rotateAuthKey} from "./Account.js";
+import {getAccountFromMetaData, NODE_URL, rotateAuthKey} from "../Account.js";
 import fetch from "cross-fetch";
 
 const client = new AptosClient("https://fullnode.devnet.aptoslabs.com");
@@ -128,11 +128,11 @@ const accountMetaData = {
     derivationPath: "m/44'/637'/0'/0/2",
     address: "0xaa7420c68c16645775ecf69a5e2fdaa4f89d3293aee0dd280e2d97ad7b879650",
 }
-const currentAccount = getAccountFromMetaData(process.env.WORDS, accountMetaData);
-console.log('------currentAccount---------',{
-    publicKey: Buffer.from(currentAccount.signingKey.publicKey).toString('hex')
-});
-const newAuthKey = await rotateAuthKey(process.env.WORDS,accountMetaData);
+// const currentAccount = getAccountFromMetaData(process.env.WORDS, accountMetaData);
+// console.log('------currentAccount---------',{
+//     publicKey: Buffer.from(currentAccount.signingKey.publicKey).toString('hex')
+// });
+// const newAuthKey = await rotateAuthKey(process.env.WORDS,accountMetaData);
 
 // signGenericTransaction(currentAccount,
 //     "0x1::account::rotate_authentication_key",
