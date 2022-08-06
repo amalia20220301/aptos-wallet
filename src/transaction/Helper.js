@@ -1,38 +1,11 @@
-import 'dotenv/config'
-import {AptosClient, TxnBuilderTypes, BCS} from "aptos";
-import {getAccountFromMetaData, NODE_URL, rotateAuthKey} from "../Account.js";
+import {AptosClient} from "aptos";
 import fetch from "cross-fetch";
+import {NODE_URL} from "../Constant.js";
 
-const client = new AptosClient("https://fullnode.devnet.aptoslabs.com");
+export const client = new AptosClient("https://fullnode.devnet.aptoslabs.com");
 
-const transfer = async(accountFrom,recipient,amount)=>{
-    const token = new TxnBuilderTypes.TypeTagStruct(TxnBuilderTypes.StructTag.fromString("0x1::aptos_coin::AptosCoin"));
-    const scriptFunctionPayload = new TxnBuilderTypes.TransactionPayloadScriptFunction(
-        TxnBuilderTypes.ScriptFunction.natural(
-        "0x1::coin",
-        "transfer",
-        [token],
-            [BCS.bcsToBytes(TxnBuilderTypes.AccountAddress.fromHex(recipient)), BCS.bcsSerializeUint64(amount)],
-    ));
-    const [{sequence_number: sequenceNumber}, chainId] = await Promise.all([
-        client.getAccount(accountFrom.address()),
-        client.getChainId(),
-    ]);
-    const rawTxn = new TxnBuilderTypes.RawTransaction(
-        TxnBuilderTypes.AccountAddress.fromHex(accountFrom.address()),
-        BigInt(sequenceNumber),
-        scriptFunctionPayload,
-        1000n,
-        1n,
-        BigInt(Math.floor(Date.now()/1000)+10),
-        new TxnBuilderTypes.ChainId(chainId)
-    )
-    const bcsTxn = AptosClient.generateBCSTransaction(accountFrom, rawTxn);
-    const pendingTxn = await client.submitSignedBCSTransaction(bcsTxn);
-    return pendingTxn.hash;
-}
 
-const getAccount = async (accountAddress) => {
+export const getAccount = async (accountAddress) => {
     const response =  await fetch(
         `${NODE_URL}/accounts/${accountAddress}`,
         {
@@ -42,7 +15,7 @@ const getAccount = async (accountAddress) => {
     return response.json();
 }
 
-const createSigningMessage = async (txnRequest) =>{
+export const createSigningMessage = async (txnRequest) =>{
     const url = `${NODE_URL}/transactions/signing_message`;
     const options = {
         method: "POST",
@@ -56,7 +29,7 @@ const createSigningMessage = async (txnRequest) =>{
     return res.json();
 }
 
-const submitTransaction = async (SignedTransaction) =>{
+export const submitTransaction = async (SignedTransaction) =>{
     const url = `${NODE_URL}/transactions`;
     const options = {
         method: "POST",
@@ -71,7 +44,24 @@ const submitTransaction = async (SignedTransaction) =>{
     return res.json();
 }
 
-const signTransaction = async (accountFrom, txnRequest) =>{
+export const getAccountBalance = async (address, resource)=>{
+    const result = await client.getAccountResource(address, resource);
+    if (result == null) {
+        return null;
+    }
+    return parseInt((result.data)["coin"]["value"]);
+}
+
+// const address = "0x792ec29f1884a4cdbd5211f01c5189fbdf3e6f9b37d4d25dc705f314927b02bc";
+// getAccountBalance(address,{
+//     address: "0x1",
+//     module: "coin",
+//     name: "CoinStore",
+//     generic_type_params: ["0x1::aptos_coin::AptosCoin"]
+// }).then(console.log)
+
+
+export const signTransaction = async (accountFrom, txnRequest) =>{
     const result = await createSigningMessage(txnRequest);
     console.log('----signTransaction-----message------', result);
     const signatureHex = accountFrom.signHexString(result.message);
@@ -83,7 +73,8 @@ const signTransaction = async (accountFrom, txnRequest) =>{
     }
     return {signature: txSignature, ...txnRequest};
 }
-const submitTransactionHelper = async (account, payload, options)=>{
+
+export const submitTransactionHelper = async (account, payload, options)=>{
     const senderAddress = account.address().hex();
     const onChainAccount = await getAccount(senderAddress);
     const txnRequest = {
@@ -104,7 +95,7 @@ const submitTransactionHelper = async (account, payload, options)=>{
     console.log('------submitTransactionHelper transaction hash---------', res.hash);
 }
 
-const signGenericTransaction = async (
+export const signGenericTransaction = async (
     account,
     func,
     args,
@@ -123,18 +114,3 @@ const signGenericTransaction = async (
         {max_gas_amount: '4000'}
     );
 }
-
-const accountMetaData = {
-    derivationPath: "m/44'/637'/0'/0/2",
-    address: "0xaa7420c68c16645775ecf69a5e2fdaa4f89d3293aee0dd280e2d97ad7b879650",
-}
-// const currentAccount = getAccountFromMetaData(process.env.WORDS, accountMetaData);
-// console.log('------currentAccount---------',{
-//     publicKey: Buffer.from(currentAccount.signingKey.publicKey).toString('hex')
-// });
-// const newAuthKey = await rotateAuthKey(process.env.WORDS,accountMetaData);
-
-// signGenericTransaction(currentAccount,
-//     "0x1::account::rotate_authentication_key",
-//     [newAuthKey],
-//     []).then(console.log);

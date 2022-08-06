@@ -5,11 +5,7 @@ import {AptosAccount} from "aptos";
 import fetch from "cross-fetch";
 import sha3 from "js-sha3";
 import {Buffer} from "buffer";
-
-const MAX_ACCOUNTS = 5;
-const COIN_TYPE = 637;
-const ADDRESS_GAP = 10;
-export const NODE_URL = "https://fullnode.devnet.aptoslabs.com";
+import {ADDRESS_GAP, COIN_TYPE, MAX_ACCOUNTS, NODE_URL} from "./Constant.js";
 
 // address generation logic following https://github.com/martian-dao/aptos-web3.js/search?q=HDKey
 export const getAccount = () => {
@@ -113,29 +109,3 @@ export const getAccountFromMetaData = (code,metaData)=> {
     const exKey = node.derive(metaData.derivationPath);
     return new AptosAccount(exKey.privateKey, metaData.address);
 }
-
-export const rotateAuthKey = async (code, metaData) =>{
-    //根据metaData获取当前的Account
-    const account = getAccountFromMetaData(code ,metaData);
-    const pathSplit = metaData.derivationPath.split("/");
-    const addressIndex = Number(pathSplit[pathSplit.length - 1]);
-    const newDerivationPath = `${pathSplit
-        .slice(0, pathSplit.length - 1)
-        .join("/")}/${addressIndex + 1}`;
-
-    if (addressIndex >= ADDRESS_GAP - 1) {
-        throw new Error("Maximum key rotation reached");
-    }
-    //生成下一个account，address不变，但是signingKey改变了。authentication key 也随之改变了。
-    const newAccount = getAccountFromMetaData(code,metaData);
-    return newAccount.authKey().toString().split("0x")[1];
-
-    // const transactionStatus = await this.signGenericTransaction(
-    //     account,
-    //     "0x1::account::rotate_authentication_key",
-    //     [newAuthKey],
-    //     []
-    // );
-}
-
-// rotateAuthKey(process.env.WORDS,"0xaa7420c68c16645775ecf69a5e2fdaa4f89d3293aee0dd280e2d97ad7b879650","m/44'/637'/0'/0/0").then(console.log);
