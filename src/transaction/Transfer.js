@@ -32,9 +32,9 @@ export const transfer = async(accountFrom,recipient,amount)=>{
     const pendingTxn = await client.submitSignedBCSTransaction(bcsTxn);
     return pendingTxn.hash;
 }
+
 // const metaData = {
-//     derivationPath: "m/44'/637'/1'/0/0",
-//     address: "0x792ec29f1884a4cdbd5211f01c5189fbdf3e6f9b37d4d25dc705f314927b02bc",
+//     derivationPath: "m/44'/637'/0'/0/0"
 // };
 // const accountFrom = getAccountFromMetaData(process.env.WORDS,metaData);
 // console.log('-------accountFrom---------', accountFrom);
