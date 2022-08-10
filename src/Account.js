@@ -6,6 +6,7 @@ import fetch from "cross-fetch";
 import sha3 from "js-sha3";
 import {Buffer} from "buffer";
 import {ADDRESS_GAP, COIN_TYPE, MAX_ACCOUNTS, NODE_URL} from "./Constant.js";
+import {derivePath} from "ed25519-hd-key";
 
 // address generation logic following https://github.com/martian-dao/aptos-web3.js/search?q=HDKey
 export const getAccount = () => {
@@ -128,12 +129,36 @@ const createNewAccount = async (code) => {
     }
 }
 
+const WORDS="rich guitar rally exercise radio food wish pluck input broccoli sample wing";
+const derivationPath = "m/44'/637'/0'/0'/0'";
+export const generateAccount = (derivationPath) => {
+    // For Demo, never use it to manage your assets.
+    const seed = bip39.mnemonicToSeedSync(WORDS);
+    const { key } = derivePath(derivationPath, seed.toString('hex'));
+    console.log('----key-----------', Buffer.from(key).toString('hex'));
+    return new AptosAccount(key);
+}
+const account = generateAccount(derivationPath);
+
+console.log({
+    address: account.address().hex(),
+    privKey: Buffer.from(account.signingKey.secretKey).toString('hex')
+});
+
+const accountMetaData = {
+    // current authenction key's derivation path
+    derivationPath: "m/44'/637'/0'/0'/0'",
+    address: "0x2746f8df274cd4467df8fcfa0b4b7f4700d647077d0d39d86d963b2a5b2e604a"
+}
+
 export const getAccountFromMetaData = (code,metaData)=> {
     const seed = bip39.mnemonicToSeedSync(code.toString());
-    const node = HDKey.fromMasterSeed(Buffer.from(seed));
-    const exKey = node.derive(metaData.derivationPath);
-    return new AptosAccount(exKey.privateKey, metaData.address);
+    const { key } = derivePath(derivationPath, seed.toString('hex'));
+    return new AptosAccount(key, metaData.address);
 }
+
+const account = getAccountFromMetaData(process.env.WORDS, accountMetaData);
+
 
 
 /**

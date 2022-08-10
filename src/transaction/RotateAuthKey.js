@@ -28,6 +28,12 @@ const generateNextAuthKey = (code ,metaData)=>{
 }
 
 export const rotateAuthKey = async (account, newAuthKey) =>{
+    const payload = {
+        type: "script_function_payload",
+        function: func,
+        type_arguments: type_args,
+        arguments: args,
+    };
     return signGenericTransaction(
         account,
         "0x1::account::rotate_authentication_key",
@@ -37,9 +43,21 @@ export const rotateAuthKey = async (account, newAuthKey) =>{
 }
 
 const accountMetaData = {
+    // current authentication key's derivation path
     derivationPath: "m/44'/637'/0'/0'/0'",
     address: "0x2746f8df274cd4467df8fcfa0b4b7f4700d647077d0d39d86d963b2a5b2e604a"
 }
+
+export const getAccountFromMetaData = (code,metaData)=> {
+    const seed = bip39.mnemonicToSeedSync(code.toString());
+    const { key } = derivePath(metaData.derivationPath, seed.toString('hex'));
+    return new AptosAccount(key, metaData.address);
+}
+
+const account = getAccountFromMetaData(process.env.WORDS, accountMetaData);
+const newAuthKey = generateNextAuthKey(process.env.WORDS, accountMetaData);
+rotateAuthKey(account,newAuthKey);
+
 // const currentAccount = getAccountFromMetaData(process.env.WORDS,accountMetaData);
 
 // console.log('-------account before rotateKey--------',{
