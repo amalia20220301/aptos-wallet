@@ -129,22 +129,6 @@ const createNewAccount = async (code) => {
     }
 }
 
-const WORDS="rich guitar rally exercise radio food wish pluck input broccoli sample wing";
-const derivationPath = "m/44'/637'/0'/0'/0'";
-export const generateAccount = (derivationPath) => {
-    // For Demo, never use it to manage your assets.
-    const seed = bip39.mnemonicToSeedSync(WORDS);
-    const { key } = derivePath(derivationPath, seed.toString('hex'));
-    console.log('----key-----------', Buffer.from(key).toString('hex'));
-    return new AptosAccount(key);
-}
-const account = generateAccount(derivationPath);
-
-console.log({
-    address: account.address().hex(),
-    privKey: Buffer.from(account.signingKey.secretKey).toString('hex')
-});
-
 const accountMetaData = {
     // current authenction key's derivation path
     derivationPath: "m/44'/637'/0'/0'/0'",
@@ -152,15 +136,11 @@ const accountMetaData = {
 }
 
 export const getAccountFromMetaData = (code,metaData)=> {
-    const seed = bip39.mnemonicToSeedSync(code.toString());
-    const { key } = derivePath(derivationPath, seed.toString('hex'));
-    return new AptosAccount(key, metaData.address);
+    const seed = bip39.mnemonicToSeedSync(code);
+    const node = HDKey.fromMasterSeed(Buffer.from(seed));
+    const exKey = node.derive(metaData.derivationPath);
+    return new AptosAccount(exKey.privateKey, metaData.address);
 }
-
-const account = getAccountFromMetaData(process.env.WORDS, accountMetaData);
-
-
-
 /**
  * words: rich guitar rally exercise radio food wish pluck input broccoli sample wing
  * account1: derivationPath: "m/44'/637'/0'/0/0"
