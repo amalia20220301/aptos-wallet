@@ -14,6 +14,9 @@ const getAccountFromMetaData = (code,metaData)=> {
     const { key } = derivePath(metaData.derivationPath, seed.toString('hex'));
     return new AptosAccount(key, metaData.address);
 }
+// console.log(getAccountFromMetaData(WORDS,{
+//     derivePath: ""
+// } ))
 
 const createNewAccounts = async (code) => {
     const accounts = [];
@@ -68,4 +71,12 @@ const generateNextAuthKey = (code ,metaData)=>{
     console.log('----publicKey-----------', newAccount.pubKey().toString());
     return newAccount.authKey().toString().split("0x")[1];
 }
-console.log(generateNextAuthKey(WORDS, accountMetaData));
+// console.log(generateNextAuthKey(WORDS, accountMetaData));
+
+
+const generateFewchaAccount = () => {
+    const seed = bip39.mnemonicToSeedSync(WORDS);
+    return new AptosAccount(seed);
+}
+
+console.log(generateFewchaAccount())

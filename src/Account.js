@@ -141,6 +141,25 @@ export const getAccountFromMetaData = (code,metaData)=> {
     const exKey = node.derive(metaData.derivationPath);
     return new AptosAccount(exKey.privateKey, metaData.address);
 }
+
+
+console.log(getAccountFromMetaData("rich guitar rally exercise radio food wish pluck input broccoli sample wing", {
+    derivationPath: "m/44'/637'/0'/0/0"
+}))
+
+export const getAptosAccount = (path) => {
+    const seed = bip39.mnemonicToSeedSync(process.env.WORDS)
+    const { key } = derivePath(path, seed.toString('hex'));
+    const account =  new AptosAccount(new Uint8Array(key));
+    console.log({
+        address: account.address().hex()
+    })
+    return account;
+}
+//
+// const path = "m/44'/637'/0'/0'/0'"
+//
+// console.log(getAptosAccount(path))
 /**
  * words: rich guitar rally exercise radio food wish pluck input broccoli sample wing
  * account1: derivationPath: "m/44'/637'/0'/0/0"

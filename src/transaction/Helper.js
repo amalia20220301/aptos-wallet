@@ -16,7 +16,7 @@ export const getAccount = async (accountAddress) => {
 }
 
 export const createSigningMessage = async (txnRequest) =>{
-    const url = `${NODE_URL}/transactions/signing_message`;
+    const url = `${NODE_URL}/transactions/encode_submission`;
     const options = {
         method: "POST",
         headers: {
@@ -62,6 +62,7 @@ export const getAccountBalance = async (address, resource)=>{
 
 
 export const signTransaction = async (accountFrom, txnRequest) =>{
+    console.log('----signTransaction-----message------', txnRequest);
     const result = await createSigningMessage(txnRequest);
     console.log('----signTransaction-----message------', result);
     const signatureHex = accountFrom.signHexString(result.message);
@@ -90,7 +91,7 @@ export const submitTransactionHelper = async (account, payload, options)=>{
     };
     const signedTxn = await signTransaction(account,txnRequest);
 
-    console.log('------submitTransactionHelper---------', signedTxn);
+    console.log('------submitTransactionHelper---------', signedTxn, txnRequest);
     const res = await submitTransaction(signedTxn);
     console.log('------submitTransactionHelper transaction hash---------', res.hash);
 }
