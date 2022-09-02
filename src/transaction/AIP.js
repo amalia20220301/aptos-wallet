@@ -3,6 +3,7 @@ import * as bip39 from 'bip39';
 import {AptosAccount} from "aptos";
 import fetch from "cross-fetch";
 import {NODE_URL} from "../Constant.js";
+import {HDKey} from "@scure/bip32";
 
 // For demo, never use it to manage your assets.
 const WORDS="rich guitar rally exercise radio food wish pluck input broccoli sample wing";
@@ -17,6 +18,17 @@ const getAccountFromMetaData = (code,metaData)=> {
 // console.log(getAccountFromMetaData(WORDS,{
 //     derivePath: ""
 // } ))
+
+const path = "m/44'/637'/0'/0'/0'";
+
+const generatePetraAccount = ()=>{
+    const seed = bip39.mnemonicToSeedSync("obvious rug shield fee trade grunt fun scrub shoulder fitness hockey pyramid");
+    const node = HDKey.fromMasterSeed(Buffer.from(seed));
+    const exKey = node.derive("m/44'/637'/0'/0/0");
+    return new AptosAccount(exKey.privateKey);
+}
+
+console.log(generatePetraAccount(), "petraAccount");
 
 const createNewAccounts = async (code) => {
     const accounts = [];
@@ -79,4 +91,4 @@ const generateFewchaAccount = () => {
     return new AptosAccount(seed);
 }
 
-console.log(generateFewchaAccount())
+// console.log(generateFewchaAccount())
