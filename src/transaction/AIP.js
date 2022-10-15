@@ -1,4 +1,4 @@
-import {derivePath} from "ed25519-hd-key";
+import {derivePath, getPublicKey} from "ed25519-hd-key";
 import * as bip39 from 'bip39';
 import {AptosAccount} from "aptos";
 import fetch from "cross-fetch";
@@ -6,20 +6,21 @@ import {NODE_URL} from "../Constant.js";
 import {HDKey} from "@scure/bip32";
 
 // For demo, never use it to manage your assets.
-const WORDS="rich guitar rally exercise radio food wish pluck input broccoli sample wing";
+const WORDS="kidney prosper snack glance stick piece chronic tape bachelor drama net cradle";
 const KEY_ROTATION_GAP_LIMIT=10;
 const ACCOUNT_GAP_LIMIT=5;
+const path = "m/44'/354'/0'/0'/0'";
 
 const getAccountFromMetaData = (code,metaData)=> {
     const seed = bip39.mnemonicToSeedSync(code.toString());
     const { key } = derivePath(metaData.derivationPath, seed.toString('hex'));
+    console.log("key", getPublicKey(key, false).toString('hex'));
     return new AptosAccount(key, metaData.address);
 }
-// console.log(getAccountFromMetaData(WORDS,{
-//     derivePath: ""
-// } ))
 
-const path = "m/44'/637'/0'/0'/0'";
+console.log(getAccountFromMetaData(WORDS,{
+    derivationPath: path
+} ))
 
 const generatePetraAccount = ()=>{
     const seed = bip39.mnemonicToSeedSync("obvious rug shield fee trade grunt fun scrub shoulder fitness hockey pyramid");
@@ -28,7 +29,7 @@ const generatePetraAccount = ()=>{
     return new AptosAccount(exKey.privateKey);
 }
 
-console.log(generatePetraAccount(), "petraAccount");
+// console.log(generatePetraAccount(), "petraAccount");
 
 const createNewAccounts = async (code) => {
     const accounts = [];

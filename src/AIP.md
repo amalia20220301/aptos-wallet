@@ -130,3 +130,8 @@ const createNewAccounts = async (code) => {
 }
 createNewAccounts(WORDS);
 ```
+
+### Authentication key rotation
+1. Wallet use mnemonic phrase to generate an Ed25519 private/public key pair (priv_a, pub_a) follow [SLIP-10](https://github.com/satoshilabs/slips/blob/master/slip-0010.md), with hdPath "m/44'/637'/{accountIndex}'/0'/0'", account_a created with authKey  auth_key = sha_256(pub_a | scheme_id).
+2. Wallet a new mnemonic phrase to generate an Ed25519 private/public key pair (priv_b, pub_b) follow [SLIP-10](https://github.com/satoshilabs/slips/blob/master/slip-0010.md), with the same `accountIndex` from step 1, account_b is created on-chain, with the auth_key=sha_256(pub_b | schema_id).
+3. Rotate the authentication key follow [this](https://github.com/aptos-labs/aptos-core/pull/2972) technology.

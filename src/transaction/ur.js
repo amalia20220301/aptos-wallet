@@ -12,10 +12,10 @@ import {getAccountFromMetaData} from "../Account.js";
 
 // signature data from the QR Code
 
-export const generateSignatureData = ()=>{
+export const decodeSignatureData = ()=>{
     const decoder = new URDecoder();
 
-    const ur = 'ur:aptos-signature/otadtpdagdndcawmgtfrkigrpmndutdnbtkgfssbjnaohdfzflvdrebeksfyamuroygtnettfneteebglugaskjnursamnuyaoskaajpcfktnyuewebgadkbdlnebyjtlskodmlnyaahstehckpdmyqzaxzmclmhbaammefwpazoehbaaxhdcxmnguvdpaamhflyjnvdaydkvladjlseoektvdksdavydedauogwcnnefpleprvtgloynbcfut';
+    const ur = 'UR:APTOS-SIGNATURE/OTADTPDAGDFEMWTBVERELGFYBBPKNNTPBKSSTSGWCNAOHDFZZMAXUOTKESMSISSPDNTDOXOXBAMSAEDIGYEOLUCEFEOTTANECXCMZMFGSFAYDYCXJTBWEHWZCWVOGEKGTLHTDKWLGOAMGEOLBDVOFEIMKEHGOTCMHSFSAAMKFWRLKTAXAXHDCXWKDRWLVYJNKIBKMSHPFDQZLFJOYATKRNRYKPOYJLFGJZLPHGYLZTVTISBKLTOYLYWTLPGSBG';
 
     decoder.receivePart(ur)
 
@@ -25,16 +25,15 @@ export const generateSignatureData = ()=>{
         const requestIdBuffer = aptosSignature.getRequestId();
         const signature = aptosSignature.getSignature();
         const publicKey = aptosSignature.getAuthenticationPublicKey();
-        return {
-            signature,
-            publicKey,
-        } // it will return signature and publicKey to construct TransactionSignature.
+        console.log(signature.toString('hex'))
+        console.log(publicKey.toString('hex'))
 
     } else if(decoder.isError()){
         // logic for error handling
         throw new Error()
     }
 }
+decodeSignatureData()
 
 export const decodeSignRequestUR = () =>{
     const decoder = new URDecoder();
@@ -58,7 +57,7 @@ export const decodeSignRequestUR = () =>{
     }
 }
 
-console.log(decodeSignRequestUR());
+// console.log(decodeSignRequestUR());
 // console.log(generateSignatureData());
 
 export const generateCryptoMultiAccountsData = ()=>{

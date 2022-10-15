@@ -50,6 +50,8 @@ export const registerCoin = async (coinReceiver, coinTypeAddress) => {
     const token = new TxnBuilderTypes.TypeTagStruct(
         TxnBuilderTypes.StructTag.fromString(`${coinTypeAddress.hex()}::moon_coin::MoonCoin`),
     );
+    const proof = new TxnBuilderTypes.TypeTagStruct(TxnBuilderTypes.StructTag.fromString("0x1::account::RotationProof"));
+    proof.serialize()
     /*
     * api updated https://github.com/martian-dao/aptos-web3.js/pull/19/commits/24d69d80fee2d380be12b46b1673cbbfb4ebd017
     * https://github.com/martian-dao/aptos-web3.js/pull/19/commits/24d69d80fee2d380be12b46b1673cbbfb4ebd017
