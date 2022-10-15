@@ -81,12 +81,19 @@ Here is the detailed way of Account generation and Key rotation.
 ### Account generation
 
 1. derive private and public key pair for ed25519 curve for hdPath "m/44'/637'/0'/0'/0'" following the [slip10](https://github.com/satoshilabs/slips/blob/master/slip-0010.md) standard. the `sha3-256(pubkey_A | signing_schema)` will be the account's initial authentication key according to the [Aptos Authentication Key Definition](https://aptos.dev/concepts/basics-accounts/#authentication-keys), so as the account's address.
-2. more private and public key pairs can be derived by increasing the `account level` hdPath described in step 1; respect the `address limit` described below.
-   <img width="753" alt="image" src="https://user-images.githubusercontent.com/9380107/188758887-e9fb9418-9748-4ced-8814-76a124640f3b.png">
+2. more private and public key pairs can be derived by increasing the `account level` hdPath described in step 1;
+   <img width="733" alt="image" src="https://user-images.githubusercontent.com/9380107/195962166-0b605e52-e6d0-4792-9ab0-089e2387c447.png">
 
-## Address limit
+### Account recovery
 
-Address limit should be set. if the wallet hit this limit, it expects there are no used addresses beyond this point and stop searching the address chain.
+When wallets import accounts, it should start to discover the accounts in the following manner:
+
+1. derive private and public key pair for ed25519 curve for hdPath "m/44'/637'/0'/0'/0'" following the [slip10](https://github.com/satoshilabs/slips/blob/master/slip-0010.md) standard.
+2. scan addresses on chain; respect the address gap limit described below.
+
+## Address gap limit
+
+Address gap limit is currently set to 10. If the wallet hits 10 unused addresses in a row, it expects there are no used addresses beyond this point and stops searching the address chain.
 
 ## Code snippet
 
@@ -106,31 +113,27 @@ const getAccountFromMetaData = (code, metaData) => {
   const { key } = derivePath(metaData.derivationPath, seed.toString("hex"))
   return new AptosAccount(key, metaData.address)
 }
+```
 
-const ACCOUNT_LIMIT = 10
+### Account discovery
 
-const importantAccountsFromMnemonic = async (code) => {
-  const accounts = []
-  for (let i = 0; i < ACCOUNT_LIMIT; i += 1) {
-    const derivationPath = `m/44'/637'/${i}'/0'/0'`
-    const acc = getAccountFromMetaData(code, {
-      derivationPath,
-    })
-    const address = acc.authKey().toString()
-    const response = await fetch(`${NODE_URL}/accounts/${address}`, {
-      method: "GET",
-    })
-    if (response.status !== 404) {
-      accounts.push({
-        derivationPath,
-        address,
-        publicKey: acc.pubKey().toString(),
-      })
-    }
+```javascript
+const gapLimit = 10
+let currentGap = 0
+
+for (let i = 0; currentGap < gapLimit; i += 1) {
+  const derivationPath = `m/44'/637'/${i}'/0'/0'`
+  const acc = getAccountFromMetaData(code, {
+    derivationPath,
+  })
+  const response = account.getResources()
+  if (response.status !== 404) {
+    wallet.addAccount(account)
+    currentGap = 0
+  } else {
+    currentGap += 1
   }
-  return accounts
 }
-importantAccountsFromMnemonic(WORDS)
 ```
 
 ### Authentication key rotation
